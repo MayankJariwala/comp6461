@@ -120,9 +120,9 @@ public class ClientRequest {
             this.dataOutputStream.flush();
             br.close();
         } catch (IOException e) {
-//            this.dataOutputStream.writeBytes("HTTP/1.0 404 NOT FOUND\r\n");
-//            this.dataOutputStream.writeBytes("\r\n");
-//            this.dataOutputStream.flush();
+            this.dataOutputStream.writeBytes("HTTP/1.0 404 NOT FOUND\r\n");
+            this.dataOutputStream.writeBytes("\r\n");
+            this.dataOutputStream.flush();
         }
     }
 }
