@@ -1,18 +1,21 @@
 package model;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Server {
 
     private boolean isVerbose = false;
     private int port = 8080;
-    private Path path = Path.of("httpfs.java");
+    public static Path path = Paths.get("D:\\lab 2\\httpfsserver\\src");
 
     public Server() {
-
     }
 
     public boolean isVerbose() {
@@ -47,7 +50,7 @@ public class Server {
                 case "-d":
                     i = i + 1;
                     data = args[i];
-                    this.path = Path.of(data);
+                    path = Paths.get(data);
                     break;
             }
         }
