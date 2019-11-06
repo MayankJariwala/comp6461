@@ -8,18 +8,16 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.nio.file.Path;
 import java.util.HashMap;
 
 public class ClientRequest extends ClientConfiguration implements Runnable {
 
     private String method;
     private String accessPath;
-    private Path clientAccessingPath;
     private HashMap<String, String> headers = new HashMap<>();
     private String data = "";
     private Action action;
-    private Server server = null;
+    private Server server;
 
     public ClientRequest(Socket socket) {
         super();
@@ -40,21 +38,6 @@ public class ClientRequest extends ClientConfiguration implements Runnable {
                 break;
             default:
                 break;
-        }
-    }
-
-    @Override
-    public void run() {
-        try {
-            parseClientRequest();
-            if (isAuthorizedRequest())
-                sendUnauthorizedRequest();
-            else
-                execute();
-            this.socket.close();
-            Thread.currentThread().interrupt();
-        } catch (IOException e) {
-            System.out.println("Exception Catch : " + e.getLocalizedMessage());
         }
     }
 
@@ -112,5 +95,20 @@ public class ClientRequest extends ClientConfiguration implements Runnable {
         dataOutputStream.writeBytes("\r\n");
         dataOutputStream.flush();
         dataOutputStream.close();
+    }
+
+    @Override
+    public void run() {
+        try {
+            parseClientRequest();
+            if (isAuthorizedRequest())
+                sendUnauthorizedRequest();
+            else
+                execute();
+            this.socket.close();
+            Thread.currentThread().interrupt();
+        } catch (IOException e) {
+            System.out.println("Exception Catch : " + e.getLocalizedMessage());
+        }
     }
 }
