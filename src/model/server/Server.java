@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 public class Server {
 
-    private boolean isVerbose = false;
+    private boolean isVerbose = true;
     private int port = 8080;
     private boolean overwrite = false;
     private boolean dispositionMode = false;
@@ -78,6 +78,7 @@ public class Server {
     }
 
     public void listFilesOfServerDir(Socket socket, HashMap<String, String> headers) {
+        int contentLength = 0;
         try (Stream<Path> walk = Files.walk(Server.path)) {
             List<String> result = walk
                     .filter(Files::isRegularFile)
@@ -89,11 +90,14 @@ public class Server {
             for (Map.Entry<String, String> entry : headers.entrySet()) {
                 dataOutputStream.writeBytes(entry.getKey() + ":" + entry.getValue() + "\r\n");
             }
-            dataOutputStream.writeBytes("Content-Length:" + result.size() + "\r\n");
-            dataOutputStream.writeBytes("\r\n");
+            StringBuilder fileNames = new StringBuilder();
             for (String data : result) {
-                dataOutputStream.writeBytes(data + "\r\n");
+                fileNames.append(data).append("\n");
+                contentLength += data.length();
             }
+            dataOutputStream.writeBytes("Content-Length:" + contentLength + "\r\n");
+            dataOutputStream.writeBytes("\r\n");
+            dataOutputStream.writeBytes(fileNames + "\r\n");
             dataOutputStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -134,8 +138,12 @@ public class Server {
             BufferedReader br = new BufferedReader(new FileReader(clientAccessingPath.toString()));
             String line;
             dataOutputStream.writeBytes("HTTP/1.0 200 OK\r\n");
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
-                dataOutputStream.writeBytes(entry.getKey() + ":" + entry.getValue() + "\r\n");
+            if (headers.size() > 0) {
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    dataOutputStream.writeBytes(entry.getKey() + ":" + entry.getValue() + "\r\n");
+                }
+            } else {
+                dataOutputStream.writeBytes("Content-Type:application/json\r\n");
             }
             if (dispositionMode)
                 // Disposition, to allow browser to download files

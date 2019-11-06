@@ -17,7 +17,7 @@ public class httpfs {
 
     private void startListening(Server server) {
         try {
-            final ServerSocket serverSocket = new ServerSocket(server.getPort(), 100000, InetAddress.getByName("127.0.0.1"));
+            final ServerSocket serverSocket = new ServerSocket(server.getPort(), 100000, InetAddress.getByName(Constants.IP_ADDRESS));
             System.out.println("----------- Server Configuration ------------------");
             System.out.println("Server Status : Up");
             System.out.println("Server Port : " + server.getPort());

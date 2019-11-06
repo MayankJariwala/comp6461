@@ -92,6 +92,9 @@ public class ClientRequest extends ClientConfiguration implements Runnable {
     private void sendUnauthorizedRequest() throws IOException {
         DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
         dataOutputStream.writeBytes("HTTP/1.0 401 UNAUTHORIZED\r\n");
+        dataOutputStream.writeBytes("Content-Type:application/json\r\n");
+        dataOutputStream.writeBytes("\r\n");
+        dataOutputStream.writeBytes("{\"status\":\"ACCESS DENIED\"}\r\n");
         dataOutputStream.writeBytes("\r\n");
         dataOutputStream.flush();
         dataOutputStream.close();
@@ -106,7 +109,6 @@ public class ClientRequest extends ClientConfiguration implements Runnable {
             else
                 execute();
             this.socket.close();
-            Thread.currentThread().interrupt();
         } catch (IOException e) {
             System.out.println("Exception Catch : " + e.getLocalizedMessage());
         }
