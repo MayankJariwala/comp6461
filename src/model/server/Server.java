@@ -16,6 +16,7 @@ public class Server {
     private boolean isVerbose = false;
     private int port = 8080;
     private boolean overwrite = false;
+    private boolean dispositionMode = false;
     public static String pathStr = ".";
     public static Path path = Paths.get(pathStr).normalize().toAbsolutePath();
     private static Server server = null;
@@ -39,6 +40,10 @@ public class Server {
 
     public Path getPath() {
         return path;
+    }
+
+    public boolean isDispositionMode() {
+        return dispositionMode;
     }
 
     @Override
@@ -84,6 +89,7 @@ public class Server {
             for (Map.Entry<String, String> entry : headers.entrySet()) {
                 dataOutputStream.writeBytes(entry.getKey() + ":" + entry.getValue() + "\r\n");
             }
+            dataOutputStream.writeBytes("Content-Length:" + result.size() + "\r\n");
             dataOutputStream.writeBytes("\r\n");
             for (String data : result) {
                 dataOutputStream.writeBytes(data + "\r\n");
@@ -94,7 +100,7 @@ public class Server {
         }
     }
 
-    public synchronized void writeFile(Socket socket, Path clientAccessingPath, String data, HashMap<String, String> headers) {
+    public void writeFile(Socket socket, Path clientAccessingPath, String data, HashMap<String, String> headers) {
         try {
             DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
             if (!Files.exists(clientAccessingPath)) {
@@ -104,9 +110,11 @@ public class Server {
                 shouldPrintRequest("Requested Dir Creating Status: " + DirectoryCreated);
                 shouldPrintRequest("Requested File Creating Status: " + fileCreated);
             }
-            FileWriter fileWriter = new FileWriter(clientAccessingPath.toString(), overwrite);
-            fileWriter.write(data);
-            fileWriter.close();
+            synchronized (this) {
+                FileWriter fileWriter = new FileWriter(clientAccessingPath.toString(), !overwrite);
+                fileWriter.write(data);
+                fileWriter.close();
+            }
             dataOutputStream.writeBytes("HTTP/1.0 200 OK\r\n");
             for (Map.Entry<String, String> entry : headers.entrySet()) {
                 dataOutputStream.writeBytes(entry.getKey() + ":" + entry.getValue() + "\r\n");
@@ -121,19 +129,27 @@ public class Server {
     public void readFile(Socket socket, Path clientAccessingPath, HashMap<String, String> headers) throws IOException {
         DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
         try {
+            int contentLength = 0;
+            StringBuilder content = new StringBuilder();
             BufferedReader br = new BufferedReader(new FileReader(clientAccessingPath.toString()));
             String line;
             dataOutputStream.writeBytes("HTTP/1.0 200 OK\r\n");
             for (Map.Entry<String, String> entry : headers.entrySet()) {
                 dataOutputStream.writeBytes(entry.getKey() + ":" + entry.getValue() + "\r\n");
             }
-            dataOutputStream.writeBytes("\r\n");
+            if (dispositionMode)
+                // Disposition, to allow browser to download files
+                dataOutputStream.writeBytes("Content-Disposition:attachment\r\n");
             while ((line = br.readLine()) != null) {
-                dataOutputStream.writeBytes(line + "\r\n");
+                contentLength += line.length();
+                content.append(line).append("\n");
             }
+            br.close();
+            dataOutputStream.writeBytes("Content-Length:" + contentLength + "\r\n");
+            dataOutputStream.writeBytes("\r\n");
+            dataOutputStream.writeBytes(content.toString() + "\r\n");
             dataOutputStream.writeBytes("\r\n");
             dataOutputStream.flush();
-            br.close();
         } catch (IOException e) {
             dataOutputStream.writeBytes("HTTP/1.0 404 NOT FOUND\r\n");
             dataOutputStream.writeBytes("\r\n");
