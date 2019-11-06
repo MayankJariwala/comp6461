@@ -15,6 +15,7 @@ public class Server {
 
     private boolean isVerbose = false;
     private int port = 8080;
+    private boolean overwrite = false;
     public static String pathStr = ".";
     public static Path path = Paths.get(pathStr).normalize().toAbsolutePath();
     private static Server server = null;
@@ -62,6 +63,11 @@ public class Server {
                     data = args[i];
                     path = Paths.get(data).normalize().toAbsolutePath();
                     break;
+                case "overwrite":
+                    i = i + 1;
+                    data = args[i];
+                    overwrite = Boolean.parseBoolean(data);
+                    break;
             }
         }
     }
@@ -98,7 +104,7 @@ public class Server {
                 shouldPrintRequest("Requested Dir Creating Status: " + DirectoryCreated);
                 shouldPrintRequest("Requested File Creating Status: " + fileCreated);
             }
-            FileWriter fileWriter = new FileWriter(clientAccessingPath.toString(), true);
+            FileWriter fileWriter = new FileWriter(clientAccessingPath.toString(), overwrite);
             fileWriter.write(data);
             fileWriter.close();
             dataOutputStream.writeBytes("HTTP/1.0 200 OK\r\n");
@@ -123,7 +129,6 @@ public class Server {
             }
             dataOutputStream.writeBytes("\r\n");
             while ((line = br.readLine()) != null) {
-                System.out.println(line);
                 dataOutputStream.writeBytes(line + "\r\n");
             }
             dataOutputStream.writeBytes("\r\n");

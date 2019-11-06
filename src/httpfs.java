@@ -23,7 +23,7 @@ public class httpfs {
             System.out.println("Server Port : " + server.getPort());
             System.out.println("Server Data Dir : " + server.getPath());
             System.out.println("Server Verbosity : " + server.isVerbose());
-            System.out.println("----------- Server Configuration ------------------");
+            System.out.println("----------- Server Configuration ------------------\n");
             while (true) {
                 Socket clientRequestSocket = serverSocket.accept();
                 Thread thread = new Thread(new ClientRequest(clientRequestSocket));
