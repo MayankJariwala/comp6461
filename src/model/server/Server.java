@@ -167,8 +167,8 @@ public class Server {
 
     private String filterFileExtension(HashMap<String, String> headers) {
         String extension = ".txt";
-        if (headers.size() > 0 && headers.containsKey("Content-Type")) {
-            String headerValue = headers.get("Content-Type");
+        if (headers.size() > 0 && headers.containsKey("Accept")) {
+            String headerValue = headers.get("Accept");
             switch (headerValue) {
                 case "application/json":
                     extension = ".json";

@@ -81,7 +81,7 @@ public class ClientRequest extends ClientConfiguration implements Runnable {
 
     private void setClientOperation() {
         if (method.equals("get")) {
-            if (accessPath.equals("/"))
+            if (accessPath.endsWith("/"))
                 this.action = Action.LIST_FILES;
             else
                 this.action = Action.READ_FILE;
